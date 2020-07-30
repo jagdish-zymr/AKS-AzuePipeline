@@ -12,7 +12,7 @@ stages:
   - job: Validate
     continueOnError: false
     steps:
-    - publish: 1-terraform
+    - publish: terraform
       artifact: terraform_out
     - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
       displayName: 'Use Terraform v0.12.6'
@@ -22,18 +22,18 @@ stages:
       displayName: 'terraform init'
       inputs:
         command: init
-        workingDirectory: 1-terraform
+        workingDirectory: terraform
         backendType: azurerm
-        backendServiceArm: 'Azure SPN'
+        backendServiceArm: 'Azure Service'
         backendAzureRmResourceGroupName: 'AKSTerraform-RG'
-        backendAzureRmStorageAccountName: 'nyuenterraformstate'
+        backendAzureRmStorageAccountName: 'jagszymr'
         backendAzureRmContainerName: 'tfstate'
         backendAzureRmKey: 'demo.terraform.tfstate'
     - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-cli.TerraformCLI@0
       displayName: 'terraform validate'
       inputs:
         command: validate
-        workingDirectory: 1-terraform
+        workingDirectory: terraform
  
 
 - stage: Deploy
@@ -45,7 +45,6 @@ stages:
     # creates an environment if it doesn’t exist
     environment: 'DEV'
     strategy:
-      # default deployment strategy
       runOnce:
         deploy:
           steps:
@@ -57,9 +56,9 @@ stages:
               command: init
               workingDirectory: $(Pipeline.Workspace)/terraform_out
               backendType: azurerm
-              backendServiceArm: 'Azure SPN'
+              backendServiceArm: 'Azure Service'
               backendAzureRmResourceGroupName: 'AKSTerraform-RG'
-              backendAzureRmStorageAccountName: 'nyuenterraformstate'
+              backendAzureRmStorageAccountName: 'jagszymr'
               backendAzureRmContainerName: 'tfstate'
               backendAzureRmKey: 'demo.terraform.tfstate'
           - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-cli.TerraformCLI@0
@@ -67,7 +66,7 @@ stages:
             inputs:
               command: plan
               workingDirectory: $(Pipeline.Workspace)/terraform_out
-              environmentServiceName: 'Azure SPN'
+              environmentServiceName: 'Azure Service'
               secureVarsFile: 'aks_conf.tfvars'
               commandOptions: '-out $(Pipeline.Workspace)/terraform_out/terraform_aks_out'
               terraformVersion: 0.12.6
@@ -76,7 +75,7 @@ stages:
             inputs:
               command: apply
               workingDirectory: $(Pipeline.Workspace)/terraform_out
-              environmentServiceName: 'Azure SPN'
+              environmentServiceName: 'Azure Service'
               commandOptions: '$(Pipeline.Workspace)/terraform_out/terraform_aks_out'
               terraformVersion: 0.12.6
             
